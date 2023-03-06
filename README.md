@@ -12,38 +12,42 @@ There is a classical solution to the readers-writers problem but it leads to the
 Following is the solution to the first readers-writers problem where there is a possibilty that the writers may starve. 
 Both readers and writers share the same shared location/database.
 We have a readcount variable (initially 0) and two semaphores: 
-```
+```cpp
 mutex = 1 //mutual exclusion semaphore for updating readcount variable (initially 1)
 wrt = 1 //mutual exclusion semaphore for writers (initially 1)
 ```
 
 **Readers' Process:**
-```
-wait(mutex);
-readcount++;
-if(readcount==1) wait(wrt);
-signal(mutex);
-/*
+```cpp
+do{
+  wait(mutex);
+  readcount++;
+  if(readcount==1) wait(wrt);
+  signal(mutex);
+  /*
 
-Critical Section
+  Critical Section
 
-*/
-wait(mutex);
-readcount--;
-if(readcount==0) signal(wrt);
-signal(mutex);
-
+  */
+  wait(mutex);
+  readcount--;
+  if(readcount==0) signal(wrt);
+  signal(mutex);
+  
+}while(true);
 ```
 
 **Writers' Process:**
-```
-wait(wrt);
-/*
+```cpp
+do{
+  wait(wrt);
+  /*
 
-Critical Section
+  Critical Section
 
-*/
-signal(wrt);
+  */
+  signal(wrt);
+}while(true);
 ```
 
 Here, as soon as a reader starts performing read operation, it makes the writer process to wait for `wrt` semaphore which is signalled by the reader process only when all readers are done performing their operations and all other readers wait on `mutex` semaphore. This could lead to starvation as all writers are paused on `wrt` till all the readers are done.
@@ -51,7 +55,7 @@ Here, as soon as a reader starts performing read operation, it makes the writer 
 ## Starve Free solution:
 The solution above led to starvation as the readers could continuously enter the critical section and eventually block the writers. So the starve free solution is to add another semaphore `new_mutex` that could control which process enters the workflow of the above solution. This ensures that the readers coming in after the writers are pushed into the FIFO queue of the `new_mutex` rather than blocking the writers' access, thus making the algorithm starve-free.
 Initially, semaphores:
-```
+```cpp
 mutex = 1
 wrt = 1
 new_mutex = 1
@@ -59,36 +63,39 @@ readcount = 0
 
 ```
 * Readers' Process:
-```
-wait(new_mutex);
-wait(mutex);
-readcount++;
-if(readcount==1) wait(wrt);
-signal(mutex);
-signal(new_mutex);
-/*
+```cpp
+do{
+  wait(new_mutex);
+  wait(mutex);
+  readcount++;
+  if(readcount==1) wait(wrt);
+  signal(mutex);
+  signal(new_mutex);
+  /*
 
-Critical Section
+  Critical Section
 
-*/
-wait(mutex);
-readcount--;
-if(readcount==0) signal(wrt);
-signal(mutex);
-
+  */
+  wait(mutex);
+  readcount--;
+  if(readcount==0) signal(wrt);
+  signal(mutex);
+}while(true);
 ```
 
 * Writers' Process:
-```
-wait(new_mutex);
-wait(wrt);
-//
+```cpp
+ do{
+  wait(new_mutex);
+  wait(wrt);
+  /*
 
-Critical Section
+  Critical Section
 
-//
-signal(wrt);
-signal(new_mutex);
+  */
+  signal(wrt);
+  signal(new_mutex);
+}while(true);
 ```
 Initially in the readers' process, the `wait()` function is called for `new_mutex`. This ensures that if writer process is going on, then the reader is pushed into FIFO queue of the `new_mutex` with other writer processes waiting. Thus, this enables both readers and writers to be of same priority and escape starvation.
 In the writers' process, `wait()` function is called for `new_mutex` and is thus queued if a reader process is going on. 
