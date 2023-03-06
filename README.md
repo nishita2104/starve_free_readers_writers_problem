@@ -1,4 +1,4 @@
-# Starve_Free_Readers_Writers_Problem
+# Starve-Free-Readers-Writers-Problem
 ## Description:
 Readers-Writers problem is a classical problem involving sharing of a memory or database by multiple processes concurrently. Readers read data from a shared location and writers write data to that shared location. Any number of readers can access the critical section simultaneously but only one writer can access the critical section at one point of time. While accessing the critical section, there could be synchronization problems. Thus, semaphores are used to solve those problems. However, using semphores could also lead to starvation of readers or writers based on their priority. Below is the starve free solution to this classical problem. 
 ## Data Structures used:
@@ -62,7 +62,7 @@ new_mutex = 1
 readcount = 0
 
 ```
-* Readers' Process:
+**Readers' Process:**
 ```cpp
 do{
   wait(new_mutex);
@@ -83,7 +83,7 @@ do{
 }while(true);
 ```
 
-* Writers' Process:
+**Writers' Process:**
 ```cpp
  do{
   wait(new_mutex);
@@ -100,4 +100,4 @@ do{
 Initially in the readers' process, the `wait()` function is called for `new_mutex`. This ensures that if writer process is going on, then the reader is pushed into FIFO queue of the `new_mutex` with other writer processes waiting. Thus, this enables both readers and writers to be of same priority and escape starvation.
 In the writers' process, `wait()` function is called for `new_mutex` and is thus queued if a reader process is going on. 
 
-This entire solution helps achieve the no starvation goal using a FIFO queue that implements a First-come-first-serve basis.  
+This entire solution helps achieve the no starvation goal using a FIFO queue that implements a first-come-first-serve basis.  
